@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>관리자</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --bg: #f6f8ff; --card: #ffffff; --text: #131827; --muted: #6b7280; --line: #e5e7eb;
+      --primary: #6267f5; --green: #10b981; --red: #f43f5e; --amber: #f59e0b; --blue: #3b82f6;
+      --shadow: 0 18px 45px rgba(30, 41, 59, .09); --radius: 22px;
+    }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",Arial,sans-serif; background:radial-gradient(circle at 15% 0%, rgba(98,103,245,.20), transparent 34%), radial-gradient(circle at 90% 10%, rgba(16,185,129,.15), transparent 30%), var(--bg); color:var(--text); }
+    header { position:sticky; top:0; z-index:10; backdrop-filter:blur(16px); background:rgba(246,248,255,.82); border-bottom:1px solid var(--line); }
+    .wrap { max-width:1280px; margin:0 auto; padding:18px; }
+    .top { display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; }
+    .brand { display:flex; align-items:center; gap:12px; }
+    .logo { width:43px; height:43px; border-radius:15px; display:grid; place-items:center; color:white; background:linear-gradient(135deg,var(--primary),#8b5cf6); box-shadow:0 12px 26px rgba(98,103,245,.25); font-size:22px; }
+    h1 { margin:0; font-size:22px; letter-spacing:-.04em; } .sub { color:var(--muted); font-size:13px; margin-top:2px; }
+    main { max-width:1280px; margin:0 auto; padding:22px 18px 50px; }
+    .grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; } .grid3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; }
+    .card { background:rgba(255,255,255,.90); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); padding:18px; margin-bottom:16px; }
+    .card h2 { margin:0 0 14px; font-size:18px; letter-spacing:-.03em; }
+    label { display:block; margin:0 0 7px; color:var(--muted); font-weight:800; font-size:12px; }
+    input, select { width:100%; border:1px solid var(--line); background:white; color:var(--text); border-radius:14px; padding:12px 13px; outline:none; font:inherit; }
+    input:focus, select:focus { border-color:rgba(98,103,245,.65); box-shadow:0 0 0 4px rgba(98,103,245,.12); }
+    .row { display:grid; grid-template-columns:1fr 1fr; gap:10px; } .row3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; } .row4 { display:grid; grid-template-columns:.7fr .9fr 1fr 1.2fr; gap:10px; }
+    .actions { display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
+    button { border:0; border-radius:14px; padding:11px 13px; font:inherit; font-weight:900; cursor:pointer; transition:.15s ease; }
+    button:hover { transform:translateY(-1px); } button:disabled { opacity:.45; cursor:not-allowed; transform:none; }
+    .primary { background:linear-gradient(135deg,var(--primary),#8b5cf6); color:white; } .ghost { background:white; color:var(--text); border:1px solid var(--line); }
+    .danger { background:rgba(244,63,94,.10); color:var(--red); border:1px solid rgba(244,63,94,.22); } .warn { background:rgba(245,158,11,.13); color:#92400e; border:1px solid rgba(245,158,11,.28); }
+    .ok { background:rgba(16,185,129,.12); color:#047857; border:1px solid rgba(16,185,129,.25); }
+    .stat-grid { display:grid; grid-template-columns:repeat(6,1fr); gap:10px; } .stat { border:1px solid var(--line); background:white; border-radius:18px; padding:14px; }
+    .stat small { display:block; color:var(--muted); font-weight:800; margin-bottom:6px; } .stat strong { font-size:23px; letter-spacing:-.04em; }
+    .table-wrap { overflow:auto; max-height:580px; border-radius:18px; border:1px solid var(--line); background:white; }
+    table { width:100%; border-collapse:collapse; min-width:1380px; } th,td { padding:12px 10px; border-bottom:1px solid var(--line); text-align:left; font-size:13px; white-space:nowrap; vertical-align:middle; }
+    th { position:sticky; top:0; background:#f9fafb; z-index:1; color:var(--muted); font-size:12px; } tr:last-child td { border-bottom:0; }
+    .badge { display:inline-flex; align-items:center; border-radius:999px; padding:6px 9px; font-weight:900; font-size:12px; }
+    .unused { background:rgba(16,185,129,.13); color:var(--green); } .registered { background:rgba(98,103,245,.13); color:var(--primary); } .used { background:rgba(59,130,246,.13); color:var(--blue); }
+    .expired { background:rgba(245,158,11,.15); color:#92400e; } .revoked { background:rgba(244,63,94,.13); color:var(--red); }
+    .code { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-weight:900; letter-spacing:.02em; }
+    .muted { color:var(--muted); } .small { color:var(--muted); font-size:12px; margin-top:4px; line-height:1.35; }
+    .profit-input { width:88px; padding:9px 10px; border-radius:12px; text-align:right; }
+    .profit-total { display:flex; gap:8px; flex-wrap:wrap; align-items:center; justify-content:space-between; margin:12px 0; }
+    .profit-pill { display:inline-flex; align-items:center; gap:6px; padding:8px 11px; border-radius:999px; border:1px solid var(--line); background:white; font-size:12px; font-weight:900; }
+    .my-profit-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+    .notice { border:1px solid rgba(245,158,11,.32); background:rgba(245,158,11,.10); color:#92400e; padding:12px 14px; border-radius:16px; line-height:1.5; font-size:13px; }
+    .resultBox { border:1px dashed var(--line); background:#fbfdff; border-radius:16px; padding:12px 14px; margin-top:12px; }
+    .resultBox strong { display:block; margin-bottom:5px; } .hidden { display:none; }
+    .toast { position:fixed; left:50%; bottom:22px; transform:translateX(-50%) translateY(18px); opacity:0; pointer-events:none; background:rgba(17,24,39,.94); color:white; padding:12px 15px; border-radius:999px; box-shadow:0 16px 34px rgba(0,0,0,.22); transition:.2s ease; max-width:calc(100% - 28px); text-align:center; font-weight:900; z-index:50; }
+    .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+    @media (max-width:980px){ .grid,.grid3,.row,.row3,.row4,.stat-grid,.my-profit-grid{grid-template-columns:1fr;} .top{align-items:flex-start;} }
+  </style>
+</head>
+<body>
+<header>
+  <div class="wrap top">
+    <div class="brand">
+      <div class="logo">🛠️</div>
+      <div>
+        <h1>관리자</h1>
+        <div class="sub">관리자별 비밀번호 · 판매등록 · 수익률 배분 · 사용확인 · 인증해제 · 기간권 관리</div>
+      </div>
+    </div>
+    <div class="actions" style="margin:0">
+      <button class="ghost" onclick="loadCodes()">새로고침</button>
+      <button class="ghost" onclick="copyUnusedCodes()">미사용 코드 복사</button>
+      <button class="danger" onclick="clearSavedPin()">저장 PIN 삭제</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="card">
+    <div class="notice">
+      <b>중요:</b> 알립니다. <b>판매등록 후, 구매자에게 전달</b>해야 합니다.
+    </div>
+  </section>
+
+  <section class="grid">
+    <div class="card">
+      <h2>🔐 관리자 접속</h2>
+      <div class="row">
+        <div>
+          <label for="adminPin">관리자 비밀번호</label>
+          <input id="adminPin" type="password" placeholder="개인별 관리자 비밀번호" autocomplete="current-password" />
+        </div>
+        <div>
+          <label for="savePin">비밀번호 저장</label>
+          <select id="savePin">
+            <option value="no">저장 안 함</option>
+            <option value="yes">이 브라우저에 저장</option>
+          </select>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="primary" onclick="loginAdmin()">접속 / 목록 불러오기</button>
+        <button class="ghost" onclick="savePinIfNeeded()">비밀번호 저장</button>
+      </div>
+      <div class="resultBox" id="loginInfo"><strong>현재 관리자</strong><span class="muted">아직 로그인 전입니다.</span></div>
+    </div>
+
+    <div class="card">
+      <h2>➕ 코드 생성</h2>
+      <div class="row4">
+        <div><label for="issueCount">생성 개수</label><input id="issueCount" type="number" min="1" max="100" value="5" /></div>
+        <div><label for="durationDays">이용 기간</label><input id="durationDays" type="number" min="0" max="3650" value="3" /><div class="small">3 = 3일권, 0 = 무제한</div></div>
+        <div><label for="priceText">판매 금액</label><input id="priceText" type="text" value="100억" /></div>
+        <div><label for="labelText">메모</label><input id="labelText" type="text" value="판매용 코드" /></div>
+      </div>
+      <div class="actions">
+        <button class="primary" onclick="issueCodes()">코드 생성</button>
+        <button class="ghost" onclick="copyIssuedCodes()">방금 만든 코드 복사</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="grid">
+    <div class="card">
+      <h2>💰 판매 등록</h2>
+      <div class="row3">
+        <div><label for="saleCode">판매할 코드</label><input id="saleCode" placeholder="DOBI-ABCD-1234-EF56" /></div>
+        <div><label for="buyerNickname">구매자 닉네임</label><input id="buyerNickname" placeholder="예: 만복이" /></div>
+        <div><label for="saleNote">판매 메모</label><input id="saleNote" placeholder="선택: 입금확인 등" /></div>
+      </div>
+      <div class="actions">
+        <button class="primary" onclick="registerSale()">판매 등록</button>
+        <button class="ghost" onclick="copyLastSaleText()">판매 문구 복사</button>
+      </div>
+      <div class="resultBox" id="saleResult"><strong>판매등록 결과</strong><span class="muted">예: DOBI-XXXX-XXXX-XXXX - 구매자닉네임 - 도비 &lt; 3일권 &gt;</span></div>
+    </div>
+
+    <div class="card">
+      <h2>🔎 특정 코드 확인</h2>
+      <div class="row">
+        <div><label for="checkCode">확인할 코드</label><input id="checkCode" placeholder="예: DOBI-ABCD-1234-EF56" /></div>
+        <div style="display:flex;align-items:flex-end"><button class="primary" style="width:100%" onclick="checkOneCode()">이 코드 확인</button></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card hidden" id="myProfitCard">
+    <h2>💎 내 수익금</h2>
+    <div class="small" style="margin-bottom:12px">전체 판매금액에 내 수익률을 적용한 예상 수익금입니다. 수익률 수정은 총관리자만 가능합니다.</div>
+    <div class="my-profit-grid">
+      <div class="stat"><small>내 수익률</small><strong id="myProfitShare">0%</strong></div>
+      <div class="stat"><small>내 수익금</small><strong id="myProfitPayout">0억</strong></div>
+      <div class="stat"><small>전체 판매금액</small><strong id="myProfitTotalSales">0억</strong></div>
+      <div class="stat"><small>내가 판매한 금액</small><strong id="myProfitOwnSales">0억</strong></div>
+    </div>
+    <div class="table-wrap" style="max-height:220px; margin-top:12px">
+      <table style="min-width:760px">
+        <thead><tr><th>관리자</th><th>내 수익률</th><th>내 수익금</th><th>내 판매건수</th><th>내 판매금액</th><th>기준</th></tr></thead>
+        <tbody id="myProfitRows"><tr><td colspan="6" class="muted">로그인 후 판매 목록을 불러오면 표시됩니다.</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card hidden" id="adminManageCard">
+    <h2>👑 관리자 추가 / 관리</h2>
+    <div class="row4">
+      <div><label for="newAdminName">관리자 이름</label><input id="newAdminName" placeholder="예: 새관리자" /></div>
+      <div><label for="newAdminRole">권한명</label><input id="newAdminRole" value="관리자" /></div>
+      <div><label for="newAdminPin">새 비밀번호</label><input id="newAdminPin" type="password" placeholder="최소 3자" /></div>
+      <div><label for="newAdminSuper">총관리자 여부</label><select id="newAdminSuper"><option value="false">일반 관리자</option><option value="true">총관리자</option></select></div>
+    </div>
+    <div class="actions">
+      <button class="primary" onclick="addAdminUser()">관리자 저장</button>
+      <button class="ghost" onclick="loadAdminUsers()">관리자 목록</button>
+    </div>
+    <div class="table-wrap" style="max-height:260px; margin-top:12px">
+      <table style="min-width:960px">
+        <thead><tr><th>이름</th><th>권한</th><th>상태</th><th>수익률</th><th>생성</th><th>관리</th></tr></thead>
+        <tbody id="adminRows"><tr><td colspan="6" class="muted">총관리자로 로그인하면 표시됩니다.</td></tr></tbody>
+      </table>
+    </div>
+
+    <div class="resultBox" id="profitShareInfo" style="margin-top:12px">
+      <strong>수익률 배분 안내</strong>
+      <span class="muted">각 관리자별 수익률은 총관리자만 수정할 수 있습니다. 예: 찬성 40%, 도래 30%</span>
+    </div>
+
+    <div class="profit-total" id="profitShareTotalBox">
+      <span class="profit-pill">수익률 합계 <b id="profitShareTotal">0%</b></span>
+      <span class="profit-pill">남은 비율 <b id="profitShareRemain">100%</b></span>
+      <span class="profit-pill">전체 판매금액 <b id="profitTotalSales">0억</b></span>
+    </div>
+
+    <div class="table-wrap" style="max-height:300px; margin-top:12px">
+      <table style="min-width:880px">
+        <thead><tr><th>관리자</th><th>수익률</th><th>배분금액</th><th>판매건수</th><th>본인 판매금액</th><th>상태</th></tr></thead>
+        <tbody id="profitRows"><tr><td colspan="6" class="muted">수익률 저장 후 판매 목록을 불러오면 표시됩니다.</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="stat-grid">
+    <div class="stat"><small>전체 코드</small><strong id="statTotal">0</strong></div>
+    <div class="stat"><small>미사용</small><strong id="statUnused">0</strong></div>
+    <div class="stat"><small>판매등록</small><strong id="statRegistered">0</strong></div>
+    <div class="stat"><small>사용중</small><strong id="statUsed">0</strong></div>
+    <div class="stat"><small>만료</small><strong id="statExpired">0</strong></div>
+    <div class="stat"><small>인증해제</small><strong id="statRevoked">0</strong></div>
+  </section>
+
+  <section class="card">
+    <h2>📋 코드 목록</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>상태</th><th>코드</th><th>판매정보</th><th>인증닉네임 / 남은 기간</th><th>기간권</th><th>사용 시간</th><th>만료 시간</th><th>생성 시간</th><th>판매 금액</th><th>메모</th><th>관리</th>
+          </tr>
+        </thead>
+        <tbody id="codeRows"><tr><td colspan="11" class="muted">관리자 비밀번호 입력 후 목록을 불러오세요.</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<div class="toast" id="toast">완료</div>
+
+<script>
+  // ★ 기존 index.html에 넣었던 값과 똑같이 넣으세요.
+  // NEXT_PUBLIC_SUPABASE_URL= https://jnjfzmbzuucwpuepahtz.supabase.co
+  // NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY= 뒤의 값만 SUPABASE_ANON_KEY에 넣기
+  const SUPABASE_URL = "https://jnjfzmbzuucwpuepahtz.supabase.co";
+  const SUPABASE_ANON_KEY = "sb_publishable_j1ykY1_no66Xmv86OV94xA_ezRqRKqM";
+
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  let currentRows = [];
+  let lastIssued = [];
+  let currentAdmin = null;
+  let adminUsers = [];
+  let lastSaleText = "";
+  const $ = (id) => document.getElementById(id);
+
+  function getPin() {
+    const pin = $("adminPin").value.trim();
+    if (!pin) throw new Error("관리자 비밀번호를 입력해주세요.");
+    return pin;
+  }
+  function savePinIfNeeded() { const pin = $("adminPin").value.trim(); if (!pin) return; if ($("savePin").value === "yes") localStorage.setItem("dobi_admin_pin_v3", pin); else localStorage.removeItem("dobi_admin_pin_v3"); }
+  function clearSavedPin() { localStorage.removeItem("dobi_admin_pin_v3"); $("adminPin").value=""; $("savePin").value="no"; currentAdmin=null; renderLoginInfo(); toast("저장된 비밀번호를 삭제했습니다."); }
+  function toast(msg) { const el=$("toast"); el.textContent=msg; el.classList.add("show"); setTimeout(()=>el.classList.remove("show"),1900); }
+  function fmtDate(value) { if(!value) return "-"; const d=new Date(value); return d.toLocaleString("ko-KR", {year:"2-digit",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"}); }
+  function escapeHtml(text) { return String(text ?? "").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;"); }
+  function periodText(r) { const days=Number(r.duration_days||0); return days<=0 ? "무제한" : `${days}일권`; }
+  function getStatusClass(r) { if(r.revoked||r.status==="인증해제") return "revoked"; if(r.status==="기간만료") return "expired"; if(r.is_used) return "used"; if(r.sale_registered) return "registered"; return "unused"; }
+  function remainingText(r) { if(r.revoked||r.status==="인증해제") return "인증해제됨"; if(!r.is_used) return periodText(r); if(!r.expires_at) return "무제한"; const ms=new Date(r.expires_at).getTime()-Date.now(); if(ms<=0) return "기간만료"; const totalMin=Math.floor(ms/60000); const days=Math.floor(totalMin/1440); const hours=Math.floor((totalMin%1440)/60); const mins=totalMin%60; if(days>0) return `남은 ${days}일 ${hours}시간`; if(hours>0) return `남은 ${hours}시간 ${mins}분`; return `남은 ${mins}분`; }
+  function nicknameWithRemain(r) { const name=r.used_nickname || (r.is_used ? "닉네임 없음" : "-"); const remain=remainingText(r); if(!r.is_used) return remain; return `${name} · ${remain}`; }
+  function saleTextFromRow(r) { if(!r.sale_registered) return "-"; const code=r.issued_code || "기존코드"; return `${code} - ${r.buyer_nickname || "구매자"} - ${r.sold_by_name || "판매자"} < ${periodText(r)} >`; }
+
+  function renderLoginInfo() {
+    if (!currentAdmin) {
+      $("loginInfo").innerHTML = `<strong>현재 관리자</strong><span class="muted">아직 로그인 전입니다.</span>`;
+      $("adminManageCard").classList.add("hidden");
+      $("myProfitCard").classList.add("hidden");
+      return;
+    }
+    $("loginInfo").innerHTML = `<strong>현재 관리자</strong>${escapeHtml(currentAdmin.display_name)} · ${escapeHtml(currentAdmin.role_name)}${currentAdmin.is_super_admin ? " · 총관리자" : ""}`;
+    $("adminManageCard").classList.toggle("hidden", !currentAdmin.is_super_admin);
+    $("myProfitCard").classList.remove("hidden");
+    renderMyProfitSummary();
+  }
+
+  async function loginAdmin() {
+    try {
+      savePinIfNeeded();
+      const { data, error } = await sb.rpc("admin_current_user", { p_admin_pin: getPin() });
+      if (error) throw error;
+      if (!data?.ok) return alert(data?.message || "관리자 비밀번호가 올바르지 않습니다.");
+      currentAdmin = data;
+      renderLoginInfo();
+      toast(`${data.display_name} 관리자 접속`);
+      await loadCodes(false);
+      if (currentAdmin.is_super_admin) await loadAdminUsers(false);
+    } catch (err) { console.error(err); alert("오류: " + (err?.message || JSON.stringify(err))); }
+  }
+
+  async function loadCodes(show=true) {
+    try {
+      savePinIfNeeded();
+      if (!currentAdmin) {
+        const { data, error } = await sb.rpc("admin_current_user", { p_admin_pin: getPin() });
+        if (error) throw error;
+        if (data?.ok) { currentAdmin = data; renderLoginInfo(); }
+      }
+      const { data, error } = await sb.rpc("admin_list_access_codes", { p_admin_pin: getPin(), p_limit: 700 });
+      if (error) throw error;
+      currentRows = data || [];
+      renderRows(currentRows);
+      if (show) toast("목록을 불러왔습니다.");
+    } catch (err) { console.error(err); alert("오류: " + (err?.message || JSON.stringify(err))); }
+  }
+
+  async function issueCodes() {
+    try {
+      savePinIfNeeded();
+      const count=Math.max(1,Math.min(100,Number($("issueCount").value)||1));
+      const duration=Math.max(0,Math.min(3650,Number($("durationDays").value)||0));
+      const { data, error } = await sb.rpc("admin_issue_access_codes", { p_admin_pin:getPin(), p_count:count, p_label:$("labelText").value.trim()||"판매용 코드", p_price_text:$("priceText").value.trim()||"100억", p_duration_days:duration });
+      if(error) throw error;
+      lastIssued=data||[];
+      if(!lastIssued.length) return toast("생성된 코드가 없습니다.");
+      await copyText(lastIssued.map(x=>x.issued_code).join("\n"));
+      toast(`${lastIssued.length}개 생성, 클립보드에 복사했습니다.`);
+      await loadCodes(false);
+    } catch(err) { console.error(err); alert("오류: " + (err?.message || JSON.stringify(err))); }
+  }
+
+  async function registerSale() {
+    try {
+      savePinIfNeeded();
+      const code=$("saleCode").value.trim();
+      const buyer=$("buyerNickname").value.trim();
+      const note=$("saleNote").value.trim();
+      if(!code) return toast("판매할 코드를 입력해주세요.");
+      if(!buyer) return toast("구매자 닉네임을 입력해주세요.");
+      const { data, error } = await sb.rpc("admin_register_sale", { p_admin_pin:getPin(), p_code:code, p_buyer_nickname:buyer, p_sale_note:note || null });
+      if(error) throw error;
+      if(!data?.ok) return alert(data?.message || "판매 등록 실패");
+      lastSaleText = data.sale_text || "";
+      $("saleResult").innerHTML = `<strong>판매등록 완료</strong><span class="code">${escapeHtml(lastSaleText)}</span>`;
+      await copyText(lastSaleText);
+      toast("판매 등록 완료, 문구를 복사했습니다.");
+      await loadCodes(false);
+    } catch(err) { console.error(err); alert("오류: " + (err?.message || JSON.stringify(err))); }
+  }
+
+  async function registerSaleFromRow(index) {
+    const r=currentRows[index]; if(!r || !r.issued_code) return;
+    const buyer=prompt("구매자 닉네임을 입력하세요", r.buyer_nickname || "");
+    if(!buyer) return;
+    $("saleCode").value = r.issued_code;
+    $("buyerNickname").value = buyer;
+    await registerSale();
+  }
+
+  async function unregisterSale(id) {
+    try {
+      if(!confirm("판매 등록을 취소할까요?")) return;
+      const { data, error } = await sb.rpc("admin_unregister_sale", { p_admin_pin:getPin(), p_id:id });
+      if(error) throw error;
+      toast(data?.message || "처리했습니다.");
+      await loadCodes(false);
+    } catch(err) { console.error(err); alert("오류: " + (err?.message || JSON.stringify(err))); }
+  }
+
+  async function checkOneCode() {
+    try {
+      const code=$("checkCode").value.trim(); if(!code) return toast("확인할 코드를 입력해주세요.");
+      const { data, error } = await sb.rpc("admin_check_access_code", { p_admin_pin:getPin(), p_code:code });
+      if(error) throw error;
+      if(!data || !data.length) return alert("해당 코드를 찾을 수 없습니다.");
+      renderRows(data); toast("해당 코드 결과만 표시했습니다.");
+    } catch(err) { console.error(err); alert("오류: " + (err?.message || JSON.stringify(err))); }
+  }
+
+  async function revokeRow(id, willRevoke) {
+    try {
+      if(!confirm(willRevoke ? "이 사용자의 인증을 해제할까요?" : "인증해제를 취소할까요?")) return;
+      const { data, error } = await sb.rpc("admin_revoke_access_code", { p_admin_pin:getPin(), p_id:id, p_revoke:willRevoke });
+      if(error) throw error;
+      toast(data?.message || "처리했습니다."); await loadCodes(false);
+    } catch(err) { console.error(err); alert("오류: " + (err?.message || JSON.stringify(err))); }
+  }
+
+  function renderRows(rows) {
+    currentRows=rows||[]; const body=$("codeRows");
+    if(!currentRows.length){ body.innerHTML=`<tr><td colspan="11" class="muted">표시할 코드가 없습니다.</td></tr>`; updateStats([]); renderMyProfitSummary(); return; }
+    body.innerHTML=currentRows.map((r,i)=>{
+      const code=r.issued_code || "기존 생성 코드: 원본 미저장";
+      const statusClass=getStatusClass(r);
+      const saleInfo = r.sale_registered ? `${escapeHtml(saleTextFromRow(r))}<div class="small">등록: ${escapeHtml(fmtDate(r.sold_at))}${r.sale_note ? " · " + escapeHtml(r.sale_note) : ""}</div>` : `<span class="muted">미등록</span>`;
+      const revokeButton = r.revoked ? `<button class="warn" onclick="revokeRow('${r.id}', false)">해제취소</button>` : `<button class="danger" onclick="revokeRow('${r.id}', true)">인증해제</button>`;
+      const saleButton = r.issued_code ? `<button class="ok" onclick="registerSaleFromRow(${i})">판매등록</button>` : `<button class="ok" disabled>판매등록</button>`;
+      const unSaleButton = r.sale_registered ? `<button class="warn" onclick="unregisterSale('${r.id}')">판매취소</button>` : "";
+      return `<tr>
+        <td><span class="badge ${statusClass}">${escapeHtml(r.status || "-")}</span></td>
+        <td class="code">${escapeHtml(code)}</td>
+        <td>${saleInfo}</td>
+        <td>${escapeHtml(nicknameWithRemain(r))}</td>
+        <td>${escapeHtml(periodText(r))}</td>
+        <td>${escapeHtml(fmtDate(r.used_at))}</td>
+        <td>${escapeHtml(fmtDate(r.expires_at))}</td>
+        <td>${escapeHtml(fmtDate(r.created_at))}</td>
+        <td>${escapeHtml(r.price_text || "-")}</td>
+        <td>${escapeHtml(r.label || "-")}</td>
+        <td><button class="ghost" onclick="copyRowCode(${i})" ${r.issued_code?"":"disabled"}>복사</button> ${saleButton} ${unSaleButton} ${revokeButton}</td>
+      </tr>`;
+    }).join("");
+    updateStats(currentRows);
+    renderMyProfitSummary();
+    if (currentAdmin?.is_super_admin) renderProfitSummary();
+  }
+
+  function updateStats(rows) {
+    const total=rows.length;
+    const revoked=rows.filter(r=>r.revoked||r.status==="인증해제").length;
+    const expired=rows.filter(r=>!r.revoked&&r.status==="기간만료").length;
+    const used=rows.filter(r=>!r.revoked&&r.is_used&&r.status!=="기간만료").length;
+    const registered=rows.filter(r=>!r.revoked&&r.sale_registered&&!r.is_used).length;
+    const unused=rows.filter(r=>!r.revoked&&!r.is_used&&!r.sale_registered).length;
+    $("statTotal").textContent=total.toLocaleString("ko-KR"); $("statUnused").textContent=unused.toLocaleString("ko-KR"); $("statRegistered").textContent=registered.toLocaleString("ko-KR"); $("statUsed").textContent=used.toLocaleString("ko-KR"); $("statExpired").textContent=expired.toLocaleString("ko-KR"); $("statRevoked").textContent=revoked.toLocaleString("ko-KR");
+  }
+
+  async function loadAdminUsers(show=true) {
+    try {
+      const { data, error } = await sb.rpc("admin_list_admin_users", { p_admin_pin:getPin() });
+      if(error) throw error;
+      renderAdminUsers(data||[]);
+      if(show) toast("관리자 목록을 불러왔습니다.");
+    } catch(err) { console.error(err); alert("오류: " + (err?.message || JSON.stringify(err))); }
+  }
+
+  function renderAdminUsers(rows) {
+    adminUsers = rows || [];
+    if (currentAdmin) {
+      const me = adminUsers.find(u => u.id === currentAdmin.admin_id || u.display_name === currentAdmin.display_name);
+      if (me) currentAdmin.profit_share_percent = Number(me.profit_share_percent || 0);
+    }
+    renderMyProfitSummary();
+    const body=$("adminRows");
+    if(!adminUsers.length){
+      body.innerHTML=`<tr><td colspan="6" class="muted">관리자가 없습니다.</td></tr>`;
+      renderProfitSummary();
+      return;
+    }
+    body.innerHTML=adminUsers.map(r=>`
+      <tr>
+        <td>${escapeHtml(r.display_name)}</td>
+        <td>${escapeHtml(r.role_name)}${r.is_super_admin ? " · 총관리자" : ""}</td>
+        <td>${r.active ? "활성" : "비활성"}</td>
+        <td>
+          <div style="display:flex; gap:6px; align-items:center;">
+            <input class="profit-input" id="profit_${r.id}" type="number" min="0" max="100" step="0.1" value="${Number(r.profit_share_percent || 0)}" />
+            <span class="muted">%</span>
+            <button class="ghost" onclick="setProfitShare('${r.id}')">저장</button>
+          </div>
+        </td>
+        <td>${escapeHtml(fmtDate(r.created_at))}</td>
+        <td><button class="${r.active ? "danger" : "ok"}" onclick="setAdminActive('${r.id}', ${!r.active})">${r.active ? "비활성" : "활성"}</button></td>
+      </tr>`).join("");
+    renderProfitSummary();
+  }
+
+  function parseEokAmount(value) {
+    const s = String(value || "").trim().replace(/,/g, "").replace(/\s+/g, "");
+    if (!s) return 0;
+    let total = 0;
+    const jo = s.match(/(-?\d+(?:\.\d+)?)조/);
+    const eok = s.match(/(-?\d+(?:\.\d+)?)억/);
+    if (jo) total += parseFloat(jo[1]) * 10000;
+    if (eok) total += parseFloat(eok[1]);
+    if (!jo && !eok) {
+      const num = parseFloat(s.replace(/[^0-9.\-]/g, ""));
+      total = Number.isFinite(num) ? num : 0;
+    }
+    return Math.round(total * 100) / 100;
+  }
+
+  function formatEokAmount(n) {
+    n = Number(n) || 0;
+    const sign = n < 0 ? "-" : "";
+    n = Math.abs(n);
+    if (n >= 10000) {
+      const jo = Math.floor(n / 10000);
+      const eok = Math.round((n % 10000) * 100) / 100;
+      return sign + jo.toLocaleString("ko-KR") + "조" + (eok ? " " + eok.toLocaleString("ko-KR") + "억" : "");
+    }
+    return sign + n.toLocaleString("ko-KR") + "억";
+  }
+
+  function renderMyProfitSummary() {
+    const card = $("myProfitCard");
+    const body = $("myProfitRows");
+    if (!card || !body) return;
+    if (!currentAdmin) {
+      card.classList.add("hidden");
+      return;
+    }
+
+    card.classList.remove("hidden");
+    const soldRows = (currentRows || []).filter(r => r.sale_registered);
+    const totalSales = soldRows.reduce((sum, r) => sum + parseEokAmount(r.price_text), 0);
+    const share = Number(currentAdmin.profit_share_percent || 0);
+    const payout = totalSales * share / 100;
+    const mySoldRows = soldRows.filter(r => (r.sold_by_name || "") === currentAdmin.display_name);
+    const myOwnSales = mySoldRows.reduce((sum, r) => sum + parseEokAmount(r.price_text), 0);
+
+    if ($("myProfitShare")) $("myProfitShare").textContent = `${Math.round(share * 100) / 100}%`;
+    if ($("myProfitPayout")) $("myProfitPayout").textContent = formatEokAmount(payout);
+    if ($("myProfitTotalSales")) $("myProfitTotalSales").textContent = formatEokAmount(totalSales);
+    if ($("myProfitOwnSales")) $("myProfitOwnSales").textContent = formatEokAmount(myOwnSales);
+
+    const basis = totalSales > 0 ? `전체 판매금액 ${formatEokAmount(totalSales)} 기준` : "판매등록된 금액 없음";
+    body.innerHTML = `<tr>
+      <td>${escapeHtml(currentAdmin.display_name || "-")}</td>
+      <td><b>${Math.round(share * 100) / 100}%</b></td>
+      <td><b>${formatEokAmount(payout)}</b></td>
+      <td>${mySoldRows.length.toLocaleString("ko-KR")}건</td>
+      <td>${formatEokAmount(myOwnSales)}</td>
+      <td>${escapeHtml(basis)}</td>
+    </tr>`;
+  }
+
+  function renderProfitSummary() {
+    const body = $("profitRows");
+    if (!body) return;
+    const users = adminUsers || [];
+    if (!users.length) {
+      body.innerHTML = `<tr><td colspan="6" class="muted">총관리자로 로그인하면 표시됩니다.</td></tr>`;
+      return;
+    }
+
+    const soldRows = (currentRows || []).filter(r => r.sale_registered);
+    const totalSales = soldRows.reduce((sum, r) => sum + parseEokAmount(r.price_text), 0);
+    const totalShare = users.reduce((sum, u) => sum + Number(u.profit_share_percent || 0), 0);
+    const remain = 100 - totalShare;
+
+    if ($("profitShareTotal")) $("profitShareTotal").textContent = `${Math.round(totalShare * 100) / 100}%`;
+    if ($("profitShareRemain")) $("profitShareRemain").textContent = `${Math.round(remain * 100) / 100}%`;
+    if ($("profitTotalSales")) $("profitTotalSales").textContent = formatEokAmount(totalSales);
+
+    const info = $("profitShareInfo");
+    if (info) {
+      let msg = "각 관리자별 수익률은 총관리자만 수정할 수 있습니다.";
+      if (totalShare > 100) msg = `수익률 합계가 ${Math.round(totalShare * 100) / 100}%입니다. 100%를 초과했는지 확인하세요.`;
+      else if (totalShare < 100) msg = `수익률 합계가 ${Math.round(totalShare * 100) / 100}%입니다. 남은 비율은 ${Math.round(remain * 100) / 100}%입니다.`;
+      else msg = "수익률 합계가 정확히 100%입니다.";
+      info.innerHTML = `<strong>수익률 배분 안내</strong><span class="muted">${escapeHtml(msg)}</span>`;
+    }
+
+    body.innerHTML = users.map(u => {
+      const share = Number(u.profit_share_percent || 0);
+      const sellerRows = soldRows.filter(r => (r.sold_by_name || "") === u.display_name);
+      const sellerTotal = sellerRows.reduce((sum, r) => sum + parseEokAmount(r.price_text), 0);
+      const payout = totalSales * share / 100;
+      return `<tr>
+        <td>${escapeHtml(u.display_name)}</td>
+        <td><b>${share.toLocaleString("ko-KR")}%</b></td>
+        <td>${formatEokAmount(payout)}</td>
+        <td>${sellerRows.length.toLocaleString("ko-KR")}건</td>
+        <td>${formatEokAmount(sellerTotal)}</td>
+        <td>${u.active ? "활성" : "비활성"}${u.is_super_admin ? " · 총관리자" : ""}</td>
+      </tr>`;
+    }).join("");
+  }
+
+  async function setProfitShare(id) {
+    try {
+      const input = $("profit_" + id);
+      const percent = Number(input?.value || 0);
+      if (!Number.isFinite(percent) || percent < 0 || percent > 100) return toast("수익률은 0~100 사이로 입력해주세요.");
+      const { data, error } = await sb.rpc("admin_set_profit_share", { p_admin_pin:getPin(), p_admin_id:id, p_profit_share_percent:percent });
+      if(error) throw error;
+      if(!data?.ok) return alert(data?.message || "수익률 저장 실패");
+      toast(data.message || "수익률을 저장했습니다.");
+      await loadAdminUsers(false);
+    } catch(err) { console.error(err); alert("오류: " + (err?.message || JSON.stringify(err))); }
+  }
+
+  async function addAdminUser() {
+    try {
+      const name=$("newAdminName").value.trim(); const role=$("newAdminRole").value.trim() || "관리자"; const pin=$("newAdminPin").value.trim(); const isSuper=$("newAdminSuper").value === "true";
+      if(!name) return toast("관리자 이름을 입력해주세요."); if(pin.length < 3) return toast("비밀번호는 최소 3자 이상입니다.");
+      const { data, error } = await sb.rpc("admin_add_admin_user", { p_admin_pin:getPin(), p_display_name:name, p_role_name:role, p_new_pin:pin, p_is_super_admin:isSuper });
+      if(error) throw error; if(!data?.ok) return alert(data?.message || "저장 실패");
+      $("newAdminPin").value=""; toast(data.message || "관리자 저장 완료"); await loadAdminUsers(false);
+    } catch(err) { console.error(err); alert("오류: " + (err?.message || JSON.stringify(err))); }
+  }
+
+  async function setAdminActive(id, active) {
+    try {
+      if(!confirm(active ? "이 관리자를 활성화할까요?" : "이 관리자를 비활성화할까요?")) return;
+      const { data, error } = await sb.rpc("admin_set_admin_active", { p_admin_pin:getPin(), p_admin_id:id, p_active:active });
+      if(error) throw error; if(!data?.ok) return alert(data?.message || "처리 실패");
+      toast(data.message); await loadAdminUsers(false);
+    } catch(err) { console.error(err); alert("오류: " + (err?.message || JSON.stringify(err))); }
+  }
+
+  async function copyText(text) { if(!text) return; try{ await navigator.clipboard.writeText(text); } catch { const ta=document.createElement("textarea"); ta.value=text; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); ta.remove(); } }
+  async function copyRowCode(index) { const code=currentRows[index]?.issued_code; if(!code) return; await copyText(code); toast("코드를 복사했습니다."); }
+  async function copyIssuedCodes() { if(!lastIssued.length) return toast("방금 생성한 코드가 없습니다."); await copyText(lastIssued.map(x=>x.issued_code).join("\n")); toast("방금 생성한 코드를 복사했습니다."); }
+  async function copyUnusedCodes() { const unused=currentRows.filter(r=>!r.is_used&&!r.revoked&&r.issued_code).map(r=>r.issued_code); if(!unused.length) return toast("복사할 미사용 코드가 없습니다."); await copyText(unused.join("\n")); toast(`미사용 코드 ${unused.length}개를 복사했습니다.`); }
+  async function copyLastSaleText() { if(!lastSaleText) return toast("복사할 판매 문구가 없습니다."); await copyText(lastSaleText); toast("판매 문구를 복사했습니다."); }
+
+  window.addEventListener("DOMContentLoaded", () => { const savedPin=localStorage.getItem("dobi_admin_pin_v3") || localStorage.getItem("dobi_admin_pin"); if(savedPin){ $("adminPin").value=savedPin; $("savePin").value="yes"; } renderLoginInfo(); });
+</script>
+</body>
+</html>
