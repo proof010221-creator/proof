@@ -1,0 +1,1706 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>도비의 여행기록지</title>
+  <style>
+    :root {
+      --bg: #f6f8ff;
+      --card: rgba(255,255,255,.82);
+      --card-solid: #ffffff;
+      --text: #141827;
+      --muted: #788397;
+      --line: #e7ecf6;
+      --primary: #6267f5;
+      --primary-2: #8b5cf6;
+      --green: #10b981;
+      --red: #f43f5e;
+      --amber: #f59e0b;
+      --blue: #3b82f6;
+      --shadow: 0 18px 50px rgba(30, 41, 59, .09);
+      --soft-shadow: 0 10px 28px rgba(30, 41, 59, .07);
+      --radius: 24px;
+    }
+
+    body.dark {
+      --bg: #0c1020;
+      --card: rgba(22, 28, 46, .78);
+      --card-solid: #151b2e;
+      --text: #f7f8fb;
+      --muted: #a3adc2;
+      --line: rgba(255,255,255,.09);
+      --shadow: 0 18px 50px rgba(0, 0, 0, .28);
+      --soft-shadow: 0 10px 28px rgba(0, 0, 0, .22);
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", Arial, sans-serif;
+      background:
+        radial-gradient(circle at 20% 10%, rgba(98,103,245,.20), transparent 32%),
+        radial-gradient(circle at 85% 0%, rgba(16,185,129,.14), transparent 26%),
+        radial-gradient(circle at 82% 60%, rgba(244,63,94,.11), transparent 30%),
+        var(--bg);
+      color: var(--text);
+    }
+
+    button, input, select, textarea { font: inherit; }
+
+    button { user-select: none; }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255,255,255,.62);
+      backdrop-filter: blur(18px);
+    }
+
+    body.dark header { background: rgba(12,16,32,.65); }
+
+    .header-inner {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 15px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .logo {
+      width: 42px;
+      height: 42px;
+      border-radius: 15px;
+      display: grid;
+      place-items: center;
+      color: white;
+      font-size: 22px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      box-shadow: 0 12px 24px rgba(98,103,245,.28);
+    }
+
+    .brand-title {
+      font-weight: 900;
+      font-size: 21px;
+      letter-spacing: -.04em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .brand-sub {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 2px;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .pill {
+      border: 1px solid var(--line);
+      background: var(--card-solid);
+      border-radius: 999px;
+      padding: 9px 12px;
+      font-weight: 800;
+      color: var(--text);
+      box-shadow: var(--soft-shadow);
+      white-space: nowrap;
+    }
+
+    .icon-btn {
+      border: 1px solid var(--line);
+      background: var(--card-solid);
+      color: var(--text);
+      border-radius: 14px;
+      padding: 10px 12px;
+      cursor: pointer;
+      box-shadow: var(--soft-shadow);
+      transition: .15s ease;
+    }
+
+    .icon-btn:hover, .chip:hover, .btn:hover, .mini-btn:hover { transform: translateY(-1px); }
+
+    main {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 24px 18px 50px;
+    }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 30px;
+      padding: 26px;
+      margin-bottom: 18px;
+      background:
+        linear-gradient(135deg, rgba(98,103,245,.16), rgba(16,185,129,.10)),
+        var(--card);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      right: -70px;
+      top: -80px;
+      width: 220px;
+      height: 220px;
+      border-radius: 999px;
+      background: rgba(98,103,245,.18);
+    }
+
+    .hero-grid {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: 1.15fr .85fr;
+      gap: 18px;
+      align-items: center;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(30px, 5vw, 52px);
+      line-height: 1.05;
+      letter-spacing: -.06em;
+    }
+
+    .hero p {
+      color: var(--muted);
+      margin: 14px 0 0;
+      font-size: 15px;
+      line-height: 1.65;
+    }
+
+    .hero-note {
+      display: grid;
+      gap: 10px;
+    }
+
+    .note-box {
+      padding: 14px 15px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(255,255,255,.55);
+    }
+
+    body.dark .note-box { background: rgba(255,255,255,.05); }
+
+    .note-box strong { display: block; margin-bottom: 4px; }
+    .note-box span { color: var(--muted); font-size: 13px; line-height: 1.45; }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .metric {
+      position: relative;
+      overflow: hidden;
+      min-height: 112px;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      box-shadow: var(--soft-shadow);
+      padding: 18px;
+      backdrop-filter: blur(16px);
+    }
+
+    .metric::after {
+      content: "";
+      position: absolute;
+      right: -35px;
+      bottom: -45px;
+      width: 110px;
+      height: 110px;
+      border-radius: 999px;
+      background: rgba(98,103,245,.09);
+    }
+
+    .metric small {
+      color: var(--muted);
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 800;
+      font-size: 13px;
+    }
+
+    .metric strong {
+      display: block;
+      position: relative;
+      z-index: 1;
+      font-size: clamp(20px, 2.5vw, 29px);
+      letter-spacing: -.05em;
+      word-break: keep-all;
+    }
+
+    .metric .sub {
+      position: relative;
+      z-index: 1;
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 6px;
+    }
+
+    .metric.green strong { color: var(--green); }
+    .metric.red strong { color: var(--red); }
+    .metric.blue strong { color: var(--blue); }
+    .metric.purple strong { color: var(--primary); }
+    .metric.amber strong { color: var(--amber); }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 380px;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 20px;
+      backdrop-filter: blur(18px);
+      margin-bottom: 18px;
+    }
+
+    .card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .card-title {
+      margin: 0;
+      font-size: 18px;
+      letter-spacing: -.03em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .status-card {
+      border: 1px solid var(--line);
+      background: linear-gradient(135deg, rgba(98,103,245,.10), rgba(16,185,129,.08));
+      border-radius: 18px;
+      padding: 14px;
+      margin-bottom: 16px;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .status-card strong { display: block; margin-bottom: 3px; }
+    .status-card span { color: var(--muted); font-size: 13px; }
+
+    .amount-label {
+      color: var(--muted);
+      font-weight: 800;
+      font-size: 13px;
+      margin-bottom: 10px;
+    }
+
+    .chips {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
+    .chip {
+      border: 1px solid var(--line);
+      background: var(--card-solid);
+      color: var(--text);
+      padding: 11px 14px;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: .15s ease;
+      box-shadow: var(--soft-shadow);
+      font-weight: 800;
+    }
+
+    .chip.active {
+      color: white;
+      border-color: transparent;
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      box-shadow: 0 12px 22px rgba(98,103,245,.25);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    label {
+      color: var(--muted);
+      font-weight: 800;
+      font-size: 12px;
+    }
+
+    input, select, textarea {
+      border: 1px solid var(--line);
+      background: var(--card-solid);
+      color: var(--text);
+      border-radius: 14px;
+      padding: 12px 13px;
+      outline: none;
+      transition: .12s ease;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 44px;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: rgba(98,103,245,.65);
+      box-shadow: 0 0 0 4px rgba(98,103,245,.12);
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .btn {
+      border: 0;
+      border-radius: 16px;
+      padding: 15px 16px;
+      font-weight: 900;
+      cursor: pointer;
+      color: white;
+      transition: .15s ease;
+      box-shadow: var(--soft-shadow);
+    }
+
+    .btn-win { background: linear-gradient(135deg, #12b981, #059669); }
+    .btn-lose { background: linear-gradient(135deg, #fb4d6d, #e11d48); }
+    .btn-primary { background: linear-gradient(135deg, var(--primary), var(--primary-2)); }
+    .btn-ghost {
+      background: var(--card-solid);
+      color: var(--text);
+      border: 1px solid var(--line);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .stat {
+      border: 1px solid var(--line);
+      background: var(--card-solid);
+      border-radius: 18px;
+      padding: 14px;
+      min-height: 112px;
+    }
+
+    .stat .emoji {
+      font-size: 20px;
+      margin-bottom: 6px;
+    }
+
+    .stat small {
+      color: var(--muted);
+      font-weight: 800;
+      display: block;
+      margin-bottom: 6px;
+      font-size: 12px;
+    }
+
+    .stat strong {
+      font-size: 22px;
+      letter-spacing: -.04em;
+    }
+
+    .stat span {
+      display: block;
+      color: var(--muted);
+      margin-top: 5px;
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .chart-wrap {
+      position: relative;
+      height: 260px;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background:
+        repeating-linear-gradient(to bottom, transparent 0 51px, rgba(125,139,164,.12) 52px),
+        var(--card-solid);
+      overflow: hidden;
+      padding: 8px;
+    }
+
+    canvas { width: 100%; height: 100%; display: block; }
+
+    .chart-caption {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 9px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .tab {
+      border: 1px solid var(--line);
+      background: var(--card-solid);
+      color: var(--muted);
+      border-radius: 999px;
+      padding: 9px 12px;
+      font-weight: 800;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .tab.active {
+      background: var(--text);
+      color: var(--bg);
+    }
+
+    .table-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 440px;
+      overflow: auto;
+      padding-right: 2px;
+    }
+
+    .day-row, .record {
+      border: 1px solid var(--line);
+      background: var(--card-solid);
+      border-radius: 16px;
+      padding: 13px;
+    }
+
+    .day-row {
+      display: grid;
+      grid-template-columns: 1.15fr .75fr .85fr .85fr;
+      gap: 8px;
+      align-items: center;
+      font-size: 13px;
+    }
+
+    .record {
+      display: grid;
+      grid-template-columns: auto 1fr auto auto;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .badge {
+      padding: 7px 9px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .badge.win {
+      background: rgba(16,185,129,.13);
+      color: var(--green);
+    }
+
+    .badge.lose {
+      background: rgba(244,63,94,.13);
+      color: var(--red);
+    }
+
+    .record-main strong { display: block; }
+    .record-main span { color: var(--muted); font-size: 12px; display: block; margin-top: 3px; }
+    .record-memo { color: var(--muted); font-size: 12px; margin-top: 5px; }
+
+    .plus { color: var(--green); font-weight: 900; }
+    .minus { color: var(--red); font-weight: 900; }
+    .neutral { color: var(--muted); font-weight: 900; }
+
+    .filters {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .mini-btn {
+      border: 1px solid var(--line);
+      background: var(--card-solid);
+      color: var(--text);
+      border-radius: 12px;
+      padding: 9px 10px;
+      cursor: pointer;
+      font-weight: 800;
+      transition: .15s ease;
+    }
+
+    .mini-btn.danger { color: var(--red); }
+
+    .empty {
+      text-align: center;
+      color: var(--muted);
+      padding: 38px 12px;
+      border: 1px dashed var(--line);
+      border-radius: 18px;
+      background: rgba(255,255,255,.35);
+    }
+
+    body.dark .empty { background: rgba(255,255,255,.03); }
+
+    .side-sticky {
+      position: sticky;
+      top: 92px;
+    }
+
+    .settings-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      align-items: end;
+      margin-bottom: 10px;
+    }
+
+    .data-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .file-label {
+      text-align: center;
+      border: 1px solid var(--line);
+      background: var(--card-solid);
+      color: var(--text);
+      border-radius: 12px;
+      padding: 10px;
+      cursor: pointer;
+      font-weight: 800;
+    }
+
+    .file-label input { display: none; }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 22px;
+      transform: translateX(-50%) translateY(20px);
+      opacity: 0;
+      pointer-events: none;
+      color: white;
+      background: rgba(20,24,39,.92);
+      border: 1px solid rgba(255,255,255,.12);
+      box-shadow: 0 16px 34px rgba(0,0,0,.22);
+      padding: 12px 14px;
+      border-radius: 999px;
+      z-index: 100;
+      transition: .2s ease;
+      font-weight: 800;
+      max-width: calc(100% - 30px);
+      text-align: center;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    footer {
+      text-align: center;
+      color: var(--muted);
+      padding: 0 0 26px;
+      font-size: 12px;
+    }
+
+    @media (max-width: 1050px) {
+      .layout { grid-template-columns: 1fr; }
+      .side-sticky { position: static; }
+      .summary-grid { grid-template-columns: repeat(2, 1fr); }
+      .summary-grid .metric:last-child { grid-column: span 2; }
+      .hero-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 720px) {
+      .header-inner { align-items: flex-start; }
+      .brand-sub { display: none; }
+      .hero { padding: 20px; border-radius: 24px; }
+      .summary-grid { grid-template-columns: 1fr; }
+      .summary-grid .metric:last-child { grid-column: auto; }
+      .stats-grid { grid-template-columns: 1fr 1fr; }
+      .filters { grid-template-columns: 1fr 1fr; }
+      .day-row { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (max-width: 520px) {
+      main { padding: 16px 10px 36px; }
+      header { position: static; }
+      .header-inner { padding: 12px 10px; }
+      .brand-title { font-size: 18px; }
+      .pill { display: none; }
+      .card { padding: 15px; border-radius: 20px; }
+      .form-grid, .actions, .stats-grid, .filters, .data-actions { grid-template-columns: 1fr; }
+      .record { grid-template-columns: auto 1fr; }
+      .record > .amount-result, .record > .mini-btn { justify-self: end; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <div class="brand">
+        <div class="logo">🎲</div>
+        <div>
+          <div class="brand-title">도비의 여행기록지</div>
+          <div class="brand-sub">주사위 베팅 손익 계산 & 기록장</div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <div class="pill" id="todayPill">오늘 0억</div>
+        <button class="icon-btn" id="undoBtn" title="마지막 기록 취소">↩︎</button>
+        <button class="icon-btn" id="themeBtn" title="테마 변경">🌙</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-grid">
+        <div>
+          <h1>게임 베팅 기록을<br />더 깔끔하게 계산해요.</h1>
+          <p>
+            승리와 패배를 저장하면 손익, 승률, 연승/연패, 날짜별 기록, 그래프까지 자동 계산됩니다.
+            금액이 10,000억 이상이면 자동으로 조 단위로 표시됩니다.
+          </p>
+        </div>
+        <div class="hero-note">
+          <div class="note-box">
+            <strong id="insightTitle">오늘 첫 기록을 남겨보세요</strong>
+            <span id="insightText">기록이 쌓이면 현재 흐름과 위험도를 자동으로 보여줍니다.</span>
+          </div>
+          <div class="note-box">
+            <strong>저장 방식</strong>
+            <span>현재 버전은 이 브라우저에 저장됩니다. 백업 파일을 내려받아 다른 기기에서 불러올 수 있습니다.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="summary-grid">
+      <div class="metric purple">
+        <small>총 베팅액</small>
+        <strong id="totalBet">0억</strong>
+        <span class="sub" id="totalBetSub">누적 베팅 금액</span>
+      </div>
+      <div class="metric green">
+        <small>총 수익</small>
+        <strong id="totalWin">+0억</strong>
+        <span class="sub">승리한 판 합계</span>
+      </div>
+      <div class="metric red">
+        <small>총 손실</small>
+        <strong id="totalLose">-0억</strong>
+        <span class="sub">패배한 판 합계</span>
+      </div>
+      <div class="metric" id="netMetric">
+        <small>총 순손익</small>
+        <strong id="netProfit">0억</strong>
+        <span class="sub" id="roiText">수익률 0.0%</span>
+      </div>
+      <div class="metric blue" id="balanceMetric">
+        <small>현재 잔고</small>
+        <strong id="balance">0억</strong>
+        <span class="sub" id="balanceSub">시작금 설정 가능</span>
+      </div>
+    </section>
+
+    <section class="layout">
+      <div>
+        <section class="card">
+          <div class="card-head">
+            <h2 class="card-title">🎲 베팅 기록하기</h2>
+            <button class="mini-btn" id="clearMemoBtn">입력 초기화</button>
+          </div>
+
+          <div class="status-card">
+            <div>
+              <strong id="riskTitle">안전 기록 모드</strong>
+              <span id="riskText">처음에는 작은 금액으로 기록을 시작해보세요.</span>
+            </div>
+            <div id="riskEmoji" style="font-size:28px">🧭</div>
+          </div>
+
+          <div class="amount-label">빠른 금액 선택</div>
+          <div class="chips" id="amountChips">
+            <button class="chip active" data-amount="50">50억</button>
+            <button class="chip" data-amount="100">100억</button>
+            <button class="chip" data-amount="500">500억</button>
+            <button class="chip" data-amount="1000">1,000억</button>
+            <button class="chip" data-amount="10000">1조</button>
+          </div>
+
+          <div class="form-grid">
+            <div class="field">
+              <label for="customAmount">직접 입력</label>
+              <input id="customAmount" type="number" inputmode="numeric" min="1" placeholder="예: 250" />
+            </div>
+            <div class="field">
+              <label for="betMemo">메모</label>
+              <input id="betMemo" type="text" maxlength="30" placeholder="예: 연승 후 소액, 큰판 등" />
+            </div>
+          </div>
+
+          <div class="actions">
+            <button class="btn btn-win" id="winBtn">✅ 승리 저장</button>
+            <button class="btn btn-lose" id="loseBtn">❌ 패배 저장</button>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card-head">
+            <h2 class="card-title">📊 통계</h2>
+            <div class="tabs">
+              <button class="tab active" data-chart="profit">손익</button>
+              <button class="tab" data-chart="amount">베팅액</button>
+            </div>
+          </div>
+
+          <div class="stats-grid">
+            <div class="stat">
+              <div class="emoji">🎯</div>
+              <small>총 판수</small>
+              <strong id="totalRounds">0판</strong>
+              <span id="wlCount">0승 0패</span>
+            </div>
+            <div class="stat">
+              <div class="emoji">📈</div>
+              <small>승률</small>
+              <strong id="winRate">0.0%</strong>
+              <span id="streakNow">현재 기록 없음</span>
+            </div>
+            <div class="stat">
+              <div class="emoji">💎</div>
+              <small>평균 베팅액</small>
+              <strong id="avgBet">0억</strong>
+              <span>1판 평균</span>
+            </div>
+            <div class="stat">
+              <div class="emoji">🔥</div>
+              <small>최고 연승</small>
+              <strong id="bestWinStreak">0연승</strong>
+              <span id="bestWinMoney">최대 승리 0억</span>
+            </div>
+            <div class="stat">
+              <div class="emoji">💀</div>
+              <small>최고 연패</small>
+              <strong id="bestLoseStreak">0연패</strong>
+              <span id="bestLoseMoney">최대 패배 0억</span>
+            </div>
+            <div class="stat">
+              <div class="emoji">🔮</div>
+              <small>다음판 승리예상</small>
+              <strong id="expectedRate">50.0%</strong>
+              <span id="expectedText">패배 50.0%</span>
+            </div>
+          </div>
+
+          <div class="chart-wrap" style="margin-top:14px">
+            <canvas id="mainChart" width="1000" height="380"></canvas>
+          </div>
+          <div class="chart-caption">
+            <span id="chartLeft">0판</span>
+            <span id="chartCurrent">현재: 0억</span>
+            <span id="chartRight">0판</span>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card-head">
+            <h2 class="card-title">📋 기록 목록</h2>
+            <button class="mini-btn danger" id="deleteAllBtn">전체 삭제</button>
+          </div>
+
+          <div class="filters">
+            <select id="periodFilter">
+              <option value="all">전체 기간</option>
+              <option value="today">오늘</option>
+              <option value="7">최근 7일</option>
+              <option value="30">최근 30일</option>
+            </select>
+            <select id="resultFilter">
+              <option value="all">전체 결과</option>
+              <option value="win">승리만</option>
+              <option value="lose">패배만</option>
+            </select>
+            <select id="amountFilter">
+              <option value="all">전체 금액</option>
+              <option value="50">50억</option>
+              <option value="100">100억</option>
+              <option value="500">500억</option>
+              <option value="1000">1,000억</option>
+              <option value="10000">1조</option>
+            </select>
+            <input id="searchMemo" type="search" placeholder="메모 검색" />
+          </div>
+
+          <div class="table-list" id="records"></div>
+        </section>
+      </div>
+
+      <aside class="side-sticky">
+        <section class="card">
+          <div class="card-head">
+            <h2 class="card-title">🗓️ 날짜별 손익</h2>
+            <button class="mini-btn" id="copySummaryBtn">요약 복사</button>
+          </div>
+          <div class="table-list" id="dailyList" style="max-height:310px"></div>
+        </section>
+
+        <section class="card">
+          <h2 class="card-title">⚙️ 설정 & 백업</h2>
+
+          <div class="settings-row" style="margin-top:16px">
+            <div class="field">
+              <label for="startBalance">시작금 설정</label>
+              <input id="startBalance" type="number" inputmode="numeric" min="0" placeholder="예: 5000" />
+            </div>
+            <button class="mini-btn" id="saveStartBtn">저장</button>
+          </div>
+
+          <div class="settings-row">
+            <div class="field">
+              <label for="targetProfit">목표 수익</label>
+              <input id="targetProfit" type="number" inputmode="numeric" min="0" placeholder="예: 10000" />
+            </div>
+            <button class="mini-btn" id="saveTargetBtn">저장</button>
+          </div>
+
+          <div class="settings-row">
+            <div class="field">
+              <label for="limitLoss">손실 경고선</label>
+              <input id="limitLoss" type="number" inputmode="numeric" min="0" placeholder="예: 3000" />
+            </div>
+            <button class="mini-btn" id="saveLimitBtn">저장</button>
+          </div>
+
+          <div class="data-actions">
+            <button class="mini-btn" id="exportJsonBtn">JSON 백업</button>
+            <button class="mini-btn" id="exportCsvBtn">CSV 저장</button>
+            <label class="file-label">
+              백업 불러오기
+              <input type="file" id="importFile" accept="application/json" />
+            </label>
+            <button class="mini-btn" id="resetSettingsBtn">설정 초기화</button>
+          </div>
+        </section>
+      </aside>
+    </section>
+  </main>
+
+  <footer>※ 게임 내 기록 계산용입니다. 현재 버전의 데이터는 브라우저 localStorage에 저장됩니다.</footer>
+
+  <div class="toast" id="toast">저장되었습니다.</div>
+
+  <script>
+    const STORAGE_KEY = "dobi_betting_records_v3";
+    const OLD_STORAGE_KEY = "dobi_betting_records_v1";
+    const SETTINGS_KEY = "dobi_betting_settings_v3";
+
+    const $ = (id) => document.getElementById(id);
+
+    let records = loadRecords();
+    let settings = loadSettings();
+    let selectedAmount = 50;
+    let chartMode = "profit";
+    let lastDeleted = null;
+
+    const els = {
+      todayPill: $("todayPill"),
+      totalBet: $("totalBet"),
+      totalBetSub: $("totalBetSub"),
+      totalWin: $("totalWin"),
+      totalLose: $("totalLose"),
+      netProfit: $("netProfit"),
+      netMetric: $("netMetric"),
+      roiText: $("roiText"),
+      balance: $("balance"),
+      balanceMetric: $("balanceMetric"),
+      balanceSub: $("balanceSub"),
+      insightTitle: $("insightTitle"),
+      insightText: $("insightText"),
+      riskTitle: $("riskTitle"),
+      riskText: $("riskText"),
+      riskEmoji: $("riskEmoji"),
+      customAmount: $("customAmount"),
+      betMemo: $("betMemo"),
+      totalRounds: $("totalRounds"),
+      wlCount: $("wlCount"),
+      winRate: $("winRate"),
+      streakNow: $("streakNow"),
+      avgBet: $("avgBet"),
+      bestWinStreak: $("bestWinStreak"),
+      bestLoseStreak: $("bestLoseStreak"),
+      bestWinMoney: $("bestWinMoney"),
+      bestLoseMoney: $("bestLoseMoney"),
+      expectedRate: $("expectedRate"),
+      expectedText: $("expectedText"),
+      chartLeft: $("chartLeft"),
+      chartCurrent: $("chartCurrent"),
+      chartRight: $("chartRight"),
+      dailyList: $("dailyList"),
+      records: $("records"),
+      periodFilter: $("periodFilter"),
+      resultFilter: $("resultFilter"),
+      amountFilter: $("amountFilter"),
+      searchMemo: $("searchMemo"),
+      startBalance: $("startBalance"),
+      targetProfit: $("targetProfit"),
+      limitLoss: $("limitLoss"),
+      toast: $("toast")
+    };
+
+    function loadRecords() {
+      try {
+        const current = JSON.parse(localStorage.getItem(STORAGE_KEY));
+        if (Array.isArray(current)) return current;
+
+        const old = JSON.parse(localStorage.getItem(OLD_STORAGE_KEY));
+        if (Array.isArray(old)) {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(old));
+          return old;
+        }
+        return [];
+      } catch {
+        return [];
+      }
+    }
+
+    function loadSettings() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(SETTINGS_KEY)) || {};
+        return {
+          startBalance: Number(saved.startBalance) || 0,
+          targetProfit: Number(saved.targetProfit) || 0,
+          limitLoss: Number(saved.limitLoss) || 0,
+          darkMode: Boolean(saved.darkMode)
+        };
+      } catch {
+        return { startBalance: 0, targetProfit: 0, limitLoss: 0, darkMode: false };
+      }
+    }
+
+    function saveRecords() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+    }
+
+    function saveSettings() {
+      localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+    }
+
+    function showToast(message) {
+      els.toast.textContent = message;
+      els.toast.classList.add("show");
+      setTimeout(() => els.toast.classList.remove("show"), 1700);
+    }
+
+    function money(value, withSign = false, decimal = false) {
+      const n = Number(value) || 0;
+      const abs = Math.abs(n);
+      const sign = n > 0 && withSign ? "+" : n < 0 ? "-" : "";
+
+      if (abs >= 10000) {
+        const jo = Math.floor(abs / 10000);
+        const eok = Math.round(abs % 10000);
+        if (eok === 0) return `${sign}${jo.toLocaleString("ko-KR")}조`;
+        return `${sign}${jo.toLocaleString("ko-KR")}조 ${eok.toLocaleString("ko-KR")}억`;
+      }
+
+      const text = decimal ? abs.toFixed(1) : Math.round(abs).toLocaleString("ko-KR");
+      return `${sign}${text}억`;
+    }
+
+    function shortMoney(value) {
+      const n = Number(value) || 0;
+      const abs = Math.abs(n);
+      const sign = n > 0 ? "+" : n < 0 ? "-" : "";
+      if (abs >= 10000) return `${sign}${(abs / 10000).toFixed(abs >= 100000 ? 1 : 2)}조`;
+      return `${sign}${Math.round(abs).toLocaleString("ko-KR")}억`;
+    }
+
+    function dateKey(dateString) {
+      const d = new Date(dateString);
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${y}-${m}-${day}`;
+    }
+
+    function formatDate(dateString) {
+      const d = new Date(dateString);
+      return `${d.getFullYear()}. ${String(d.getMonth() + 1).padStart(2, "0")}. ${String(d.getDate()).padStart(2, "0")}.`;
+    }
+
+    function formatTime(dateString) {
+      const d = new Date(dateString);
+      return d.toLocaleString("ko-KR", { month: "long", day: "numeric", hour: "numeric", minute: "2-digit" });
+    }
+
+    function isToday(dateString) {
+      return dateKey(dateString) === dateKey(new Date().toISOString());
+    }
+
+    function getAmount() {
+      const custom = Number(els.customAmount.value);
+      if (custom > 0) return Math.floor(custom);
+      return selectedAmount;
+    }
+
+    function addRecord(result) {
+      const amount = getAmount();
+      if (!amount || amount < 1) {
+        showToast("베팅 금액을 입력해주세요.");
+        return;
+      }
+
+      records.unshift({
+        id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()),
+        result,
+        amount,
+        profit: result === "win" ? amount : -amount,
+        memo: els.betMemo.value.trim(),
+        createdAt: new Date().toISOString()
+      });
+
+      saveRecords();
+      els.customAmount.value = "";
+      els.betMemo.value = "";
+      lastDeleted = null;
+      render();
+      showToast(result === "win" ? "승리 기록 저장!" : "패배 기록 저장!");
+    }
+
+    function deleteRecord(id) {
+      const item = records.find(r => r.id === id);
+      if (!item) return;
+      if (!confirm("이 기록을 삭제할까요?")) return;
+
+      lastDeleted = item;
+      records = records.filter(r => r.id !== id);
+      saveRecords();
+      render();
+      showToast("기록을 삭제했습니다. ↩︎ 버튼으로 복구 가능");
+    }
+
+    function undoLast() {
+      if (lastDeleted) {
+        records.unshift(lastDeleted);
+        lastDeleted = null;
+        saveRecords();
+        render();
+        showToast("삭제한 기록을 복구했습니다.");
+        return;
+      }
+
+      if (!records.length) {
+        showToast("취소할 기록이 없습니다.");
+        return;
+      }
+
+      const removed = records.shift();
+      lastDeleted = removed;
+      saveRecords();
+      render();
+      showToast("마지막 기록을 취소했습니다.");
+    }
+
+    function calcStreaks(listNewestFirst) {
+      const list = [...listNewestFirst].reverse();
+      let bestWin = 0, bestLose = 0, currentType = null, currentCount = 0;
+
+      for (const r of list) {
+        if (r.result === currentType) currentCount++;
+        else {
+          currentType = r.result;
+          currentCount = 1;
+        }
+        if (r.result === "win") bestWin = Math.max(bestWin, currentCount);
+        if (r.result === "lose") bestLose = Math.max(bestLose, currentCount);
+      }
+
+      let nowType = listNewestFirst[0]?.result || null;
+      let nowCount = 0;
+      for (const r of listNewestFirst) {
+        if (r.result === nowType) nowCount++;
+        else break;
+      }
+
+      return { bestWin, bestLose, nowType, nowCount };
+    }
+
+    function calcExpectedRate(listNewestFirst, winRate, streaks) {
+      if (listNewestFirst.length < 3) return 50;
+
+      const recent = listNewestFirst.slice(0, 8);
+      const recentWins = recent.filter(r => r.result === "win").length;
+      const recentRate = (recentWins / recent.length) * 100;
+
+      let value = 50;
+      value -= (winRate - 50) * 0.15;
+      value -= (recentRate - 50) * 0.25;
+
+      if (streaks.nowType === "win") value -= Math.min(22, streaks.nowCount * 4);
+      if (streaks.nowType === "lose") value += Math.min(22, streaks.nowCount * 4);
+
+      return Math.max(20, Math.min(80, value));
+    }
+
+    function getStats() {
+      const totalBet = records.reduce((sum, r) => sum + r.amount, 0);
+      const totalWin = records.filter(r => r.result === "win").reduce((sum, r) => sum + r.amount, 0);
+      const totalLose = records.filter(r => r.result === "lose").reduce((sum, r) => sum + r.amount, 0);
+      const net = totalWin - totalLose;
+      const todayNet = records.filter(r => isToday(r.createdAt)).reduce((sum, r) => sum + r.profit, 0);
+      const wins = records.filter(r => r.result === "win").length;
+      const loses = records.filter(r => r.result === "lose").length;
+      const total = records.length;
+      const winRate = total ? (wins / total) * 100 : 0;
+      const avgBet = total ? totalBet / total : 0;
+      const roi = totalBet ? (net / totalBet) * 100 : 0;
+      const streaks = calcStreaks(records);
+      const expected = calcExpectedRate(records, winRate, streaks);
+      const maxWin = records.filter(r => r.result === "win").reduce((m, r) => Math.max(m, r.amount), 0);
+      const maxLose = records.filter(r => r.result === "lose").reduce((m, r) => Math.max(m, r.amount), 0);
+      const balance = settings.startBalance + net;
+
+      return { totalBet, totalWin, totalLose, net, todayNet, wins, loses, total, winRate, avgBet, roi, ...streaks, expected, maxWin, maxLose, balance };
+    }
+
+    function renderSummary(s) {
+      els.totalBet.textContent = money(s.totalBet);
+      els.totalBetSub.textContent = s.totalBet >= 10000 ? "조 단위 자동 변환됨" : "누적 베팅 금액";
+      els.totalWin.textContent = money(s.totalWin, true);
+      els.totalLose.textContent = "-" + money(s.totalLose);
+      els.netProfit.textContent = money(s.net, true);
+      els.roiText.textContent = `수익률 ${s.roi.toFixed(1)}%`;
+      els.balance.textContent = money(s.balance);
+      els.balanceSub.textContent = settings.startBalance ? `시작금 ${money(settings.startBalance)}` : "시작금 설정 가능";
+      els.todayPill.textContent = `오늘 ${money(s.todayNet, true)}`;
+
+      els.netMetric.classList.toggle("green", s.net > 0);
+      els.netMetric.classList.toggle("red", s.net < 0);
+      els.netMetric.classList.toggle("amber", s.net === 0);
+
+      els.balanceMetric.classList.toggle("green", s.balance > settings.startBalance);
+      els.balanceMetric.classList.toggle("red", s.balance < settings.startBalance);
+      els.balanceMetric.classList.toggle("blue", s.balance === settings.startBalance);
+    }
+
+    function renderStats(s) {
+      els.totalRounds.textContent = `${s.total.toLocaleString("ko-KR")}판`;
+      els.wlCount.textContent = `${s.wins}승 ${s.loses}패`;
+      els.winRate.textContent = `${s.winRate.toFixed(1)}%`;
+      els.streakNow.textContent = s.nowType ? `현재 ${s.nowCount}연${s.nowType === "win" ? "승" : "패"} 중` : "현재 기록 없음";
+      els.avgBet.textContent = money(s.avgBet, false, true);
+      els.bestWinStreak.textContent = `${s.bestWin}연승`;
+      els.bestLoseStreak.textContent = `${s.bestLose}연패`;
+      els.bestWinMoney.textContent = `최대 승리 ${money(s.maxWin)}`;
+      els.bestLoseMoney.textContent = `최대 패배 ${money(s.maxLose)}`;
+      els.expectedRate.textContent = `${s.expected.toFixed(1)}%`;
+      els.expectedText.textContent = s.total < 3 ? "기록 부족" : `패배 ${(100 - s.expected).toFixed(1)}%`;
+    }
+
+    function renderInsight(s) {
+      const reachedTarget = settings.targetProfit > 0 && s.net >= settings.targetProfit;
+      const reachedLimit = settings.limitLoss > 0 && s.net <= -settings.limitLoss;
+
+      if (reachedTarget) {
+        els.insightTitle.textContent = "목표 수익에 도달했어요";
+        els.insightText.textContent = `${money(settings.targetProfit)} 목표를 넘겼습니다. 수익 보존을 고려해보세요.`;
+        els.riskTitle.textContent = "목표 달성 구간";
+        els.riskText.textContent = "수익이 났을 때는 베팅액을 갑자기 키우지 않는 것이 좋아요.";
+        els.riskEmoji.textContent = "🏁";
+        return;
+      }
+
+      if (reachedLimit) {
+        els.insightTitle.textContent = "손실 경고선에 도달했어요";
+        els.insightText.textContent = `${money(settings.limitLoss)} 이상 손실 중입니다. 잠깐 멈추고 기록을 확인하세요.`;
+        els.riskTitle.textContent = "위험 구간";
+        els.riskText.textContent = "연패 복구를 위한 무리한 증액은 손실이 커질 수 있어요.";
+        els.riskEmoji.textContent = "🚨";
+        return;
+      }
+
+      if (s.total === 0) {
+        els.insightTitle.textContent = "오늘 첫 기록을 남겨보세요";
+        els.insightText.textContent = "기록이 쌓이면 현재 흐름과 위험도를 자동으로 보여줍니다.";
+        els.riskTitle.textContent = "안전 기록 모드";
+        els.riskText.textContent = "처음에는 작은 금액으로 기록을 시작해보세요.";
+        els.riskEmoji.textContent = "🧭";
+        return;
+      }
+
+      if (s.nowType === "win" && s.nowCount >= 3) {
+        els.insightTitle.textContent = `${s.nowCount}연승 중이에요`;
+        els.insightText.textContent = "흐름은 좋지만 연승 뒤 큰판은 위험할 수 있어요.";
+        els.riskTitle.textContent = "연승 후 주의";
+        els.riskText.textContent = "수익 구간에서는 베팅액 유지 또는 축소를 고려하세요.";
+        els.riskEmoji.textContent = "🔥";
+        return;
+      }
+
+      if (s.nowType === "lose" && s.nowCount >= 3) {
+        els.insightTitle.textContent = `${s.nowCount}연패 중이에요`;
+        els.insightText.textContent = "손실 복구보다 기록 유지와 휴식이 더 중요할 수 있어요.";
+        els.riskTitle.textContent = "연패 관리";
+        els.riskText.textContent = "연패 중에는 베팅액을 올리기보다 낮추는 쪽이 안전해요.";
+        els.riskEmoji.textContent = "🧊";
+        return;
+      }
+
+      els.insightTitle.textContent = s.net >= 0 ? "현재 수익 구간이에요" : "현재 손실 구간이에요";
+      els.insightText.textContent = `누적 순손익은 ${money(s.net, true)}입니다.`;
+      els.riskTitle.textContent = s.net >= 0 ? "흐름 안정" : "손실 관리";
+      els.riskText.textContent = s.net >= 0 ? "수익이 난 상태에서는 기록을 보며 천천히 진행하세요." : "손실 중에는 목표 손실선을 정해두면 좋아요.";
+      els.riskEmoji.textContent = s.net >= 0 ? "✅" : "⚠️";
+    }
+
+    function getDailyRows() {
+      const days = new Map();
+
+      for (const r of records) {
+        const key = dateKey(r.createdAt);
+        if (!days.has(key)) {
+          days.set(key, { key, date: r.createdAt, wins: 0, loses: 0, winAmount: 0, loseAmount: 0, count: 0, net: 0 });
+        }
+        const item = days.get(key);
+        item.count++;
+        item.net += r.profit;
+        if (r.result === "win") {
+          item.wins++;
+          item.winAmount += r.amount;
+        } else {
+          item.loses++;
+          item.loseAmount += r.amount;
+        }
+      }
+
+      return [...days.values()].sort((a, b) => b.key.localeCompare(a.key));
+    }
+
+    function renderDaily() {
+      const rows = getDailyRows().slice(0, 12);
+      if (!rows.length) {
+        els.dailyList.innerHTML = `<div class="empty">아직 날짜별 기록이 없습니다.</div>`;
+        return;
+      }
+
+      els.dailyList.innerHTML = rows.map(day => `
+        <div class="day-row">
+          <div><strong>${formatDate(day.date)}</strong><br><span style="color:var(--muted);font-size:12px">${day.count}판 · ${day.wins}승 ${day.loses}패</span></div>
+          <div class="plus">+${money(day.winAmount)}</div>
+          <div class="minus">-${money(day.loseAmount)}</div>
+          <div class="${day.net > 0 ? "plus" : day.net < 0 ? "minus" : "neutral"}">${money(day.net, true)}</div>
+        </div>
+      `).join("");
+    }
+
+    function getFilteredRecords() {
+      const period = els.periodFilter.value;
+      const result = els.resultFilter.value;
+      const amount = els.amountFilter.value;
+      const keyword = els.searchMemo.value.trim().toLowerCase();
+      const now = new Date();
+
+      return records.filter(r => {
+        if (result !== "all" && r.result !== result) return false;
+        if (amount !== "all" && String(r.amount) !== amount) return false;
+        if (keyword && !(r.memo || "").toLowerCase().includes(keyword)) return false;
+
+        if (period === "today") return isToday(r.createdAt);
+        if (period === "7" || period === "30") {
+          const diff = (now - new Date(r.createdAt)) / (1000 * 60 * 60 * 24);
+          return diff <= Number(period);
+        }
+        return true;
+      });
+    }
+
+    function renderRecords() {
+      const list = getFilteredRecords();
+
+      if (!list.length) {
+        els.records.innerHTML = `<div class="empty">조건에 맞는 기록이 없습니다.</div>`;
+        return;
+      }
+
+      els.records.innerHTML = list.map(r => `
+        <div class="record">
+          <span class="badge ${r.result}">${r.result === "win" ? "승리" : "패배"}</span>
+          <div class="record-main">
+            <strong>${money(r.amount)}</strong>
+            <span>${formatTime(r.createdAt)}</span>
+            ${r.memo ? `<div class="record-memo">메모: ${escapeHtml(r.memo)}</div>` : ""}
+          </div>
+          <strong class="amount-result ${r.profit > 0 ? "plus" : "minus"}">${money(r.profit, true)}</strong>
+          <button class="mini-btn" data-delete="${r.id}">삭제</button>
+        </div>
+      `).join("");
+    }
+
+    function escapeHtml(text) {
+      return String(text)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function drawChart(s) {
+      const canvas = $("mainChart");
+      const ctx = canvas.getContext("2d");
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+
+      const chronological = [...records].reverse();
+      let points = [{ x: 0, y: 0 }];
+
+      if (chartMode === "profit") {
+        let running = 0;
+        chronological.forEach((r, index) => {
+          running += r.profit;
+          points.push({ x: index + 1, y: running });
+        });
+        els.chartCurrent.textContent = `현재: ${money(s.net, true)}`;
+      } else {
+        points = chronological.map((r, index) => ({ x: index + 1, y: r.amount }));
+        els.chartCurrent.textContent = `평균: ${money(s.avgBet, false, true)}`;
+      }
+
+      els.chartLeft.textContent = records.length ? "1판" : "0판";
+      els.chartRight.textContent = `${records.length}판`;
+
+      if ((chartMode === "profit" && points.length < 2) || (chartMode === "amount" && points.length < 1)) {
+        ctx.fillStyle = getComputedStyle(document.body).getPropertyValue("--muted");
+        ctx.font = "28px sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("기록을 추가하면 그래프가 표시됩니다.", w / 2, h / 2);
+        return;
+      }
+
+      const padding = 48;
+      const values = points.map(p => p.y);
+      const minY = chartMode === "profit" ? Math.min(...values, 0) : 0;
+      const maxY = Math.max(...values, 1);
+      const rangeY = Math.max(1, maxY - minY);
+      const len = Math.max(1, points.length - 1);
+
+      const mapX = (i) => padding + (i / len) * (w - padding * 2);
+      const mapY = (v) => h - padding - ((v - minY) / rangeY) * (h - padding * 2);
+
+      ctx.strokeStyle = getComputedStyle(document.body).getPropertyValue("--line");
+      ctx.lineWidth = 2;
+
+      if (chartMode === "profit") {
+        ctx.beginPath();
+        ctx.moveTo(padding, mapY(0));
+        ctx.lineTo(w - padding, mapY(0));
+        ctx.stroke();
+
+        const lineColor = s.net >= 0 ? "#10b981" : "#f43f5e";
+        ctx.beginPath();
+        points.forEach((p, i) => {
+          const x = mapX(i);
+          const y = mapY(p.y);
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        });
+        ctx.strokeStyle = lineColor;
+        ctx.lineWidth = 5;
+        ctx.lineJoin = "round";
+        ctx.lineCap = "round";
+        ctx.stroke();
+
+        const grad = ctx.createLinearGradient(0, padding, 0, h - padding);
+        grad.addColorStop(0, s.net >= 0 ? "rgba(16,185,129,.24)" : "rgba(244,63,94,.24)");
+        grad.addColorStop(1, "rgba(255,255,255,0)");
+        ctx.lineTo(mapX(points.length - 1), h - padding);
+        ctx.lineTo(padding, h - padding);
+        ctx.closePath();
+        ctx.fillStyle = grad;
+        ctx.fill();
+      } else {
+        const barWidth = Math.max(5, Math.min(28, (w - padding * 2) / points.length * .6));
+        points.forEach((p, i) => {
+          const x = mapX(points.length === 1 ? 0.5 : i);
+          const y = mapY(p.y);
+          ctx.fillStyle = chronological[i]?.result === "win" ? "#10b981" : "#f43f5e";
+          roundRect(ctx, x - barWidth / 2, y, barWidth, h - padding - y, 7);
+          ctx.fill();
+        });
+      }
+    }
+
+    function roundRect(ctx, x, y, width, height, radius) {
+      const r = Math.min(radius, Math.abs(height) / 2, width / 2);
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.arcTo(x + width, y, x + width, y + height, r);
+      ctx.arcTo(x + width, y + height, x, y + height, r);
+      ctx.arcTo(x, y + height, x, y, r);
+      ctx.arcTo(x, y, x + width, y, r);
+      ctx.closePath();
+    }
+
+    function renderSettingsInputs() {
+      els.startBalance.value = settings.startBalance || "";
+      els.targetProfit.value = settings.targetProfit || "";
+      els.limitLoss.value = settings.limitLoss || "";
+      document.body.classList.toggle("dark", settings.darkMode);
+      $("themeBtn").textContent = settings.darkMode ? "☀️" : "🌙";
+    }
+
+    function render() {
+      const stats = getStats();
+      renderSummary(stats);
+      renderStats(stats);
+      renderInsight(stats);
+      renderDaily();
+      renderRecords();
+      drawChart(stats);
+      renderSettingsInputs();
+    }
+
+    function exportJson() {
+      const payload = {
+        version: 3,
+        exportedAt: new Date().toISOString(),
+        settings,
+        records
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+      downloadBlob(blob, `dobi-records-${dateKey(new Date().toISOString())}.json`);
+    }
+
+    function exportCsv() {
+      const header = ["날짜", "결과", "베팅액(억)", "손익(억)", "메모"];
+      const rows = records.map(r => [
+        formatTime(r.createdAt),
+        r.result === "win" ? "승리" : "패배",
+        r.amount,
+        r.profit,
+        (r.memo || "").replaceAll('"', '""')
+      ]);
+
+      const csv = [header, ...rows]
+        .map(row => row.map(cell => `"${String(cell)}"`).join(","))
+        .join("\n");
+
+      const blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8" });
+      downloadBlob(blob, `dobi-records-${dateKey(new Date().toISOString())}.csv`);
+    }
+
+    function downloadBlob(blob, filename) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function copySummary() {
+      const s = getStats();
+      const text = [
+        "도비의 여행기록지 요약",
+        `총 판수: ${s.total}판 (${s.wins}승 ${s.loses}패)`,
+        `총 베팅액: ${money(s.totalBet)}`,
+        `총 순손익: ${money(s.net, true)}`,
+        `오늘 손익: ${money(s.todayNet, true)}`,
+        `승률: ${s.winRate.toFixed(1)}%`
+      ].join("\n");
+
+      navigator.clipboard?.writeText(text)
+        .then(() => showToast("요약을 복사했습니다."))
+        .catch(() => alert(text));
+    }
+
+    document.querySelectorAll(".chip").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".chip").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        selectedAmount = Number(btn.dataset.amount);
+        els.customAmount.value = "";
+      });
+    });
+
+    els.customAmount.addEventListener("input", () => {
+      document.querySelectorAll(".chip").forEach(b => b.classList.remove("active"));
+    });
+
+    $("winBtn").addEventListener("click", () => addRecord("win"));
+    $("loseBtn").addEventListener("click", () => addRecord("lose"));
+    $("undoBtn").addEventListener("click", undoLast);
+    $("clearMemoBtn").addEventListener("click", () => {
+      els.customAmount.value = "";
+      els.betMemo.value = "";
+      document.querySelectorAll(".chip").forEach(b => b.classList.remove("active"));
+      document.querySelector('[data-amount="50"]').classList.add("active");
+      selectedAmount = 50;
+      showToast("입력을 초기화했습니다.");
+    });
+
+    document.querySelectorAll(".tab").forEach(tab => {
+      tab.addEventListener("click", () => {
+        document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+        tab.classList.add("active");
+        chartMode = tab.dataset.chart;
+        drawChart(getStats());
+      });
+    });
+
+    [els.periodFilter, els.resultFilter, els.amountFilter, els.searchMemo].forEach(el => {
+      el.addEventListener("input", renderRecords);
+      el.addEventListener("change", renderRecords);
+    });
+
+    els.records.addEventListener("click", e => {
+      const id = e.target.dataset.delete;
+      if (id) deleteRecord(id);
+    });
+
+    $("deleteAllBtn").addEventListener("click", () => {
+      if (!records.length) return showToast("삭제할 기록이 없습니다.");
+      if (!confirm("정말 모든 기록을 삭제할까요?")) return;
+      records = [];
+      lastDeleted = null;
+      saveRecords();
+      render();
+      showToast("전체 기록을 삭제했습니다.");
+    });
+
+    $("saveStartBtn").addEventListener("click", () => {
+      settings.startBalance = Number(els.startBalance.value) || 0;
+      saveSettings();
+      render();
+      showToast("시작금을 저장했습니다.");
+    });
+
+    $("saveTargetBtn").addEventListener("click", () => {
+      settings.targetProfit = Number(els.targetProfit.value) || 0;
+      saveSettings();
+      render();
+      showToast("목표 수익을 저장했습니다.");
+    });
+
+    $("saveLimitBtn").addEventListener("click", () => {
+      settings.limitLoss = Number(els.limitLoss.value) || 0;
+      saveSettings();
+      render();
+      showToast("손실 경고선을 저장했습니다.");
+    });
+
+    $("resetSettingsBtn").addEventListener("click", () => {
+      if (!confirm("설정만 초기화할까요? 기록은 유지됩니다.")) return;
+      settings = { startBalance: 0, targetProfit: 0, limitLoss: 0, darkMode: settings.darkMode };
+      saveSettings();
+      render();
+      showToast("설정을 초기화했습니다.");
+    });
+
+    $("themeBtn").addEventListener("click", () => {
+      settings.darkMode = !settings.darkMode;
+      saveSettings();
+      render();
+    });
+
+    $("exportJsonBtn").addEventListener("click", exportJson);
+    $("exportCsvBtn").addEventListener("click", exportCsv);
+    $("copySummaryBtn").addEventListener("click", copySummary);
+
+    $("importFile").addEventListener("change", async e => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      try {
+        const text = await file.text();
+        const parsed = JSON.parse(text);
+        let importedRecords = Array.isArray(parsed) ? parsed : parsed.records;
+        let importedSettings = parsed.settings;
+
+        if (!Array.isArray(importedRecords)) throw new Error("bad file");
+        if (!confirm("현재 기록을 백업 파일로 교체할까요?")) return;
+
+        records = importedRecords;
+        if (importedSettings) {
+          settings = {
+            ...settings,
+            startBalance: Number(importedSettings.startBalance) || 0,
+            targetProfit: Number(importedSettings.targetProfit) || 0,
+            limitLoss: Number(importedSettings.limitLoss) || 0,
+            darkMode: Boolean(importedSettings.darkMode)
+          };
+          saveSettings();
+        }
+        saveRecords();
+        render();
+        showToast("백업을 불러왔습니다.");
+      } catch {
+        alert("불러올 수 없는 백업 파일입니다.");
+      } finally {
+        e.target.value = "";
+      }
+    });
+
+    render();
+  </script>
+</body>
+</html>
