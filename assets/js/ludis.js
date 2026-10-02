@@ -2354,21 +2354,41 @@
       await checkAutoDiceLogs(true);
     }
 
+    let autoDicePollDelay = 5000;
+
     function startAutoDiceTimer() {
       stopAutoDiceTimer();
       if (!isVip()) return;
       const cfg = getAutoDiceSettings();
       if (!cfg.enabled) return;
-      autoDiceTimer = setInterval(() => {
-        checkAutoDiceLogs(false);
-      }, 5000);
+
+      const scheduleNext = (delay = autoDicePollDelay) => {
+        autoDiceTimer = setTimeout(async () => {
+          await checkAutoDiceLogs(false);
+
+          const latest = getAutoDiceSettings();
+          if (latest.lastError) {
+            autoDicePollDelay = Math.min(15000, Math.max(8000, autoDicePollDelay + 3000));
+          } else {
+            autoDicePollDelay = 5000;
+          }
+
+          if (isVip() && getAutoDiceSettings().enabled) {
+            scheduleNext(autoDicePollDelay);
+          }
+        }, delay);
+      };
+
+      autoDicePollDelay = 5000;
+      scheduleNext(1000);
     }
 
     function stopAutoDiceTimer() {
       if (autoDiceTimer) {
-        clearInterval(autoDiceTimer);
+        clearTimeout(autoDiceTimer);
         autoDiceTimer = null;
       }
+      autoDicePollDelay = 5000;
     }
 
     async function checkAutoDiceLogs(manual = false) {
@@ -2397,6 +2417,7 @@
           body: JSON.stringify({
             userId: Number(cfg.userId),
             modeStartedAt: cfg.startedAt || new Date().toISOString(),
+            lastCheckAt: cfg.lastCheckAt || "",
             processedKeys,
             accessId: getSavedAccessId(),
             deviceId: getDeviceId()
@@ -2450,7 +2471,10 @@
           saved++;
         }
 
-        cfg.lastCheckAt = new Date().toISOString();
+        const warnings = Array.isArray(data.warnings) ? data.warnings : [];
+        if (warnings.length === 0) {
+          cfg.lastCheckAt = new Date().toISOString();
+        }
         cfg.savedCount = Number(cfg.savedCount || 0) + saved;
         cfg.lastError = "";
         saveAutoDiceSettings(cfg);
