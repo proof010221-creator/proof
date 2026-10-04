@@ -804,6 +804,88 @@
       font-size:15px;
       color:var(--text);
     }
+
+    /* Quick auto issue tooltip */
+    .quick-auto-box {
+      position: relative;
+    }
+    .quick-auto-title-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+    }
+    .quick-auto-notice-wrap {
+      display: inline-flex;
+      align-items: center;
+    }
+    .quick-auto-notice-icon {
+      width: 24px;
+      height: 24px;
+      padding: 0;
+      display: inline-grid;
+      place-items: center;
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
+      font-size: 16px;
+      line-height: 1;
+      cursor: help;
+      transition: background .16s ease, transform .16s ease;
+    }
+    .quick-auto-notice-icon:hover,
+    .quick-auto-notice-icon:focus-visible {
+      background: rgba(245,158,11,.13);
+      transform: translateY(-1px);
+      outline: none;
+    }
+    .quick-auto-notice-tooltip {
+      position: absolute;
+      z-index: 30;
+      left: 14px;
+      right: 14px;
+      top: 48px;
+      padding: 13px 14px;
+      border: 1px solid rgba(245,158,11,.32);
+      border-radius: 14px;
+      background: rgba(255,252,245,.98);
+      color: #5f3b00;
+      box-shadow: 0 14px 34px rgba(15,23,42,.16);
+      font-size: 12px;
+      line-height: 1.58;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-4px);
+      pointer-events: none;
+      transition: opacity .16s ease, visibility .16s ease, transform .16s ease;
+    }
+    .quick-auto-notice-tooltip b,
+    .quick-auto-notice-tooltip span {
+      display: block;
+    }
+    .quick-auto-notice-tooltip b {
+      margin-bottom: 5px;
+      color: #8a5200;
+      font-size: 13px;
+    }
+    .quick-auto-notice-tooltip span + span {
+      margin-top: 3px;
+    }
+    .quick-auto-notice-wrap:hover .quick-auto-notice-tooltip,
+    .quick-auto-notice-wrap:focus-within .quick-auto-notice-tooltip {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+    body.dark .quick-auto-notice-tooltip {
+      background: rgba(40,32,21,.98);
+      color: #f6dca8;
+      border-color: rgba(245,158,11,.34);
+      box-shadow: 0 16px 36px rgba(0,0,0,.34);
+    }
+    body.dark .quick-auto-notice-tooltip b {
+      color: #ffd58a;
+    }
     .quick-auto-sub {
       margin-top:4px;
       color:var(--muted);
