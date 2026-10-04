@@ -2166,30 +2166,37 @@
       localStorage.setItem(AUTO_DICE_KEY, JSON.stringify(value || {}));
     }
 
-    function getAutoProcessedKeys() {
+    function getAutoProcessedStorageKey(userId) {
+      const id = String(userId || getAutoDiceSettings()?.userId || "").replace(/[^0-9]/g, "");
+      return id ? `${AUTO_DICE_PROCESSED_KEY}:${id}` : AUTO_DICE_PROCESSED_KEY;
+    }
+
+    function getAutoProcessedKeys(userId) {
       try {
-        const arr = JSON.parse(localStorage.getItem(AUTO_DICE_PROCESSED_KEY) || "[]");
+        const arr = JSON.parse(localStorage.getItem(getAutoProcessedStorageKey(userId)) || "[]");
         return Array.isArray(arr) ? arr : [];
       } catch {
         return [];
       }
     }
 
-    function saveAutoProcessedKeys(keys) {
-      const clean = Array.from(new Set((keys || []).filter(Boolean))).slice(-800);
-      localStorage.setItem(AUTO_DICE_PROCESSED_KEY, JSON.stringify(clean));
+    function saveAutoProcessedKeys(keys, userId) {
+      const clean = Array.from(new Set((keys || []).filter(Boolean))).slice(-1200);
+      localStorage.setItem(getAutoProcessedStorageKey(userId), JSON.stringify(clean));
     }
 
-    function markAutoProcessed(log) {
-      const keys = getAutoProcessedKeys();
-      if (log.externalId) keys.push(log.externalId);
-      if (log.fingerprint) keys.push(log.fingerprint);
-      saveAutoProcessedKeys(keys);
+    function markAutoProcessed(log, userId) {
+      const id = String(userId || getAutoDiceSettings()?.userId || "").replace(/[^0-9]/g, "");
+      const keys = getAutoProcessedKeys(id);
+      if (log.externalId) keys.push(`${id}:${log.externalId}`);
+      if (log.fingerprint) keys.push(`${id}:${log.fingerprint}`);
+      saveAutoProcessedKeys(keys, id);
     }
 
-    function isAutoProcessed(log) {
-      const keys = new Set(getAutoProcessedKeys());
-      return keys.has(log.externalId) || keys.has(log.fingerprint);
+    function isAutoProcessed(log, userId) {
+      const id = String(userId || getAutoDiceSettings()?.userId || "").replace(/[^0-9]/g, "");
+      const keys = new Set(getAutoProcessedKeys(id));
+      return keys.has(`${id}:${log.externalId}`) || keys.has(`${id}:${log.fingerprint}`);
     }
 
     function getAutoDiceSettings() {
@@ -2283,52 +2290,65 @@
       });
     }
 
-    async function saveAutoUserId() {
+    async function saveAutoUserIdFromInput(inputId) {
       if (!await requireAccess()) return;
       if (!requireVipFeature("자동저장")) return;
-      const input = document.getElementById("autoUserIdInput");
+
+      const cfg = getAutoDiceSettings();
+      if (cfg.enabled) {
+        showLudisNotice("유저 번호 변경", "주사위 모드를 먼저 OFF 한 뒤 유저번호를 변경해주세요.");
+        renderAutoDicePanel();
+        return;
+      }
+
+      const input = document.getElementById(inputId);
       const userId = String(input?.value || "").replace(/[^0-9]/g, "").trim();
       if (!userId) {
         showLudisNotice("유저 번호 확인", "내 유저번호를 입력해주세요.");
         return;
       }
-      const cfg = getAutoDiceSettings();
+
       cfg.userId = userId;
+      cfg.lastCheckAt = "";
       cfg.lastError = "";
       saveAutoDiceSettings(cfg);
+
+      const normalInput = document.getElementById("autoUserIdInput");
+      const quickInput = document.getElementById("quickAutoUserIdInput");
+      if (normalInput) normalInput.value = userId;
+      if (quickInput) quickInput.value = userId;
+
       renderAutoDicePanel();
-      showLudisNotice("저장 완료", "내 유저번호를 저장했습니다.");
+      showLudisNotice("저장 완료", `내 유저번호 ${userId}번을 저장했습니다.`);
     }
 
+    async function saveAutoUserId() {
+      return saveAutoUserIdFromInput("autoUserIdInput");
+    }
 
     async function saveQuickAutoUserId() {
-      if (!await requireAccess()) return;
-      if (!requireVipFeature("자동저장")) return;
-      const input = document.getElementById("quickAutoUserIdInput");
-      const userId = String(input?.value || "").replace(/[^0-9]/g, "").trim();
-      if (!userId) {
-        showLudisNotice("유저 번호 확인", "내 유저번호를 입력해주세요.");
-        return;
-      }
-      const cfg = getAutoDiceSettings();
-      cfg.userId = userId;
-      cfg.lastError = "";
-      saveAutoDiceSettings(cfg);
-      renderAutoDicePanel();
-      showLudisNotice("저장 완료", "내 유저번호를 저장했습니다.");
+      return saveAutoUserIdFromInput("quickAutoUserIdInput");
     }
 
     async function toggleAutoDiceMode() {
       if (!await requireAccess()) return;
       if (!requireVipFeature("자동저장")) return;
       const cfg = getAutoDiceSettings();
-      const input = document.getElementById("autoUserIdInput");
-      const quickInput = document.getElementById("quickAutoUserIdInput");
-      const userId = String(input?.value || quickInput?.value || cfg.userId || "").replace(/[^0-9]/g, "").trim();
+      const userId = String(cfg.userId || "").replace(/[^0-9]/g, "").trim();
 
       if (!cfg.enabled && !userId) {
-        showLudisNotice("유저 번호 확인", "주사위 모드를 켜기 전에 내 유저번호를 입력해주세요.");
+        showLudisNotice("유저 번호 확인", "주사위 모드를 켜기 전에 내 유저번호를 입력하고 반드시 '유저 번호 저장'을 눌러주세요.");
         return;
+      }
+
+      if (!cfg.enabled) {
+        const normalValue = String(document.getElementById("autoUserIdInput")?.value || "").replace(/[^0-9]/g, "").trim();
+        const quickValue = String(document.getElementById("quickAutoUserIdInput")?.value || "").replace(/[^0-9]/g, "").trim();
+        const unsaved = [normalValue, quickValue].find(value => value && value !== userId);
+        if (unsaved) {
+          showLudisNotice("유저 번호 저장 필요", `입력한 유저번호 ${unsaved}번이 아직 저장되지 않았습니다. 먼저 '유저 번호 저장'을 눌러주세요.`);
+          return;
+        }
       }
 
       if (cfg.enabled) {
@@ -2410,7 +2430,7 @@
 
       autoDiceBusy = true;
       try {
-        const processedKeys = getAutoProcessedKeys();
+        const processedKeys = getAutoProcessedKeys(cfg.userId);
         const res = await fetch(AUTO_DICE_FUNCTION_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -2434,15 +2454,18 @@
         logs.sort((a,b) => new Date(a.timestamp) - new Date(b.timestamp));
 
         for (const log of logs) {
-          if (!log || isAutoProcessed(log)) continue;
-          if (records.some(r => r.externalLogId === log.externalId || r.externalLogFingerprint === log.fingerprint)) {
-            markAutoProcessed(log);
+          if (!log || isAutoProcessed(log, cfg.userId)) continue;
+          if (records.some(r =>
+            String(r.autoUserId || "") === String(cfg.userId) &&
+            (r.externalLogId === log.externalId || r.externalLogFingerprint === log.fingerprint)
+          )) {
+            markAutoProcessed(log, cfg.userId);
             continue;
           }
 
           const amountEok = Number(log.amountEok || 0);
           if (!amountEok || amountEok <= 0) {
-            markAutoProcessed(log);
+            markAutoProcessed(log, cfg.userId);
             continue;
           }
 
@@ -2462,12 +2485,13 @@
             profitEok: profit,
             memo: `자동기록 · ${tradeLabel} · ${directionLabel} · 상대 ${counterpart}`,
             source: "api_auto",
+            autoUserId: String(cfg.userId),
             externalLogId: log.externalId || "",
             externalLogFingerprint: log.fingerprint || "",
             externalTradeType: log.tradeType || ""
           });
 
-          markAutoProcessed(log);
+          markAutoProcessed(log, cfg.userId);
           saved++;
         }
 
@@ -2502,8 +2526,8 @@
 
     async function resetAutoDiceProcessed() {
       if (!await showLudisConfirm("자동 감지 기록 초기화", "자동 감지 중복 방지 기록만 초기화합니다. 기존 게임 기록은 삭제되지 않습니다. 계속할까요?", "초기화", "취소")) return;
-      localStorage.removeItem(AUTO_DICE_PROCESSED_KEY);
       const cfg = getAutoDiceSettings();
+      localStorage.removeItem(getAutoProcessedStorageKey(cfg.userId));
       cfg.savedCount = 0;
       cfg.lastError = "";
       saveAutoDiceSettings(cfg);
